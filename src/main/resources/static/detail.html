@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="css/index.css">
+    <style>
+        header a{
+            text-decoration: none;
+            color: #6c6c6c;
+        }
+        .el-menu{
+            /*去掉自带的下边框*/
+            border-bottom: 0  !important;
+        }
+        /*去掉内边距*/
+        .el-table .el-table__cell{
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <el-container>
+        <el-header height="150">
+            <div style="width: 1200px;margin: 0 auto">
+                <img src="imgs/logo.png" style="width: 300px;vertical-align: middle" alt="">
+                <span>
+                    <a href="/">首页</a><el-divider direction="vertical"></el-divider>
+                    <a href="">热点咨询</a><el-divider direction="vertical"></el-divider>
+                    <a href="">商家入驻</a><el-divider direction="vertical"></el-divider>
+                    <a href="">社会招聘</a><el-divider direction="vertical"></el-divider>
+                    <a href="">校园招聘</a><el-divider direction="vertical"></el-divider>
+                    <a href="">帮助</a>
+                </span>
+            </div>
+            <!--*********蓝色导航条开始**********-->
+            <div style="width: 100%;height: 60px;background-color: #82c8ec">
+                <el-menu style="width: 1200px;margin: 0 auto" mode="horizontal"
+                         :default-active="1" class="el-menu-demo"
+                         background-color="#82c8ec"
+                         text-color="#fff"
+                         active-text-color="#fff"
+                         @select="handleSelect">
+                    <el-menu-item v-for="c in categoryArr" :index="c.id">{{c.name}}</el-menu-item>
+                    <!--搜索框开始-->
+                    <div style="float: right;margin-top: 11px">
+                        <el-input placeholder="请输入内容" @keydown.native.enter="search()" v-model="wd"  class="input-with-select">
+                            <el-button slot="append" icon="el-icon-search" @click="search()"></el-button>
+                        </el-input>
+                    </div>
+                    <!--搜索框结束-->
+                </el-menu>
+            </div>
+            <!--*********蓝色导航条结束**********-->
+        </el-header>
+        <el-main style="width: 1200px;margin: 0 auto">
+            <el-row :gutter="20">
+                <el-col :span="12">
+                    <el-card>
+                        <img :src="product.url" width="100%">
+                    </el-card>
+                </el-col>
+                <el-col :span="12">
+                    <p style="font-size: 25px">{{product.title}}</p>
+                    <el-divider></el-divider>
+                    <p style="font-size: 15px;color: #666">发布时间:{{product.created}}</p>
+
+                    <p style="color: #666;font-size: 15px">
+                        销量:{{product.saleCount}} 浏览量:{{product.viewCount}}
+                        库存:{{product.num}}
+                    </p>
+                    <p style="font-size: 25px;font-weight: bold">￥{{product.price}}
+                        <span style="font-size: 15px;color: #666">原价:<s>{{product.oldPrice}}</s></span>
+                    </p>
+                    <!--二维码开始-->
+                    <el-row :gutter="20" style="text-align: center">
+                        <el-col :span="8">
+                            <el-card>
+                                <img src="imgs/ewm.jpg" width="100%" alt="">
+                            </el-card>
+                            <span>扫码购买商品</span>
+                        </el-col>
+                        <el-col :span="8">
+                            <el-card>
+                                <img src="imgs/ewm.jpg" width="100%" alt="">
+                            </el-card>
+                            <span>扫码关注公众号</span>
+                        </el-col>
+                        <el-col :span="8">
+                            <el-card>
+                                <img src="imgs/ewm.jpg" width="100%" alt="">
+                            </el-card>
+                            <span>扫码下载App</span>
+                        </el-col>
+                    </el-row>
+                    <!--二维码结束-->
+
+                </el-col>
+            </el-row>
+        </el-main>
+        <el-footer>
+            <!--margin-bottom: -30px让下面的元素盖住本元素-->
+
+        </el-footer>
+    </el-container>
+</div>
+</body>
+<!-- import Vue before Element -->
+<!--引入Vue框架-->
+<script src="js/vue.min.js"></script>
+<!-- import JavaScript -->
+<script src="js/index.js"></script>
+<script src="js/axios.js"></script>
+
+<script>
+    let v = new Vue({
+        el: '#app',
+        data: function() {
+            return {
+                categoryArr:[],
+                product:{},
+                wd:""
+            }
+        },
+        methods:{
+            search(){
+                //跳转到结果页面
+                location.href = "/result.html?wd="+v.wd;
+            },
+            handleSelect(index,indexPath){
+                console.log(index);
+                location.href = "/result.html?cid="+index;
+            }
+        },
+        created:function () {
+            let id = location.search.split("=")[1];
+            //发请求获取商品详情
+            axios.get("/product/selectById?id="+id).then(function (response) {
+                console.log(response.data);
+                v.product = response.data;
+            })
+
+            //发请求获取分类数据
+            axios.get("/category/select").then(function (response) {
+                v.categoryArr = response.data;
+            })
+
+        }
+    })
+</script>
+</html>

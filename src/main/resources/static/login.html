@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/index.css">
+    <style>
+        body {
+            margin: 0;
+            background-image: url("imgs/bg.jpg");
+            background-size: cover;
+            text-align: center;
+        }
+        h1 {
+            font-size: 72px;
+            color: rgb(0,150,220);
+            margin-bottom: 0;
+        }
+        img { width: 100px; }
+        h2 {
+            font-size: 32px;
+            color: rgb(0,150,220);
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <h1>欢迎来到酷鲨商城</h1>
+    <img src="imgs/shark.png" alt="">
+    <h2>CoolSharkMall</h2>
+    <el-card style="width: 600px;height: 300px;margin: 0 auto;background-color: rgba(255,255,255,0.3)">
+        <el-form style="width: 400px;margin: 30px auto" label-width="60px">
+            <el-form-item label="用户名">
+                <el-input type="text" placeholder="请输入用户名" v-model="user.username"></el-input>
+            </el-form-item>
+            <el-form-item label="密码">
+                <el-input type="password" placeholder="请输入密码" v-model="user.password"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button style="position: relative;right: 30px" type="primary" @click="login()">登录</el-button>
+            </el-form-item>
+        </el-form>
+    </el-card>
+</div>
+
+<!-- 引入 Vue -->
+<script src="js/vue.min.js"></script>
+
+<!-- 引入 Axios -->
+<script src="js/axios.js"></script>
+
+<!-- 引入 Element UI 样式和 JavaScript -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-ui@2.15.9/lib/theme-chalk/index.css">
+<script src="https://cdn.jsdelivr.net/npm/element-ui@2.15.9/lib/index.js"></script>
+
+<script>
+    let v = new Vue({
+        el: '#app',
+        data: function() {
+            return {
+                user: {
+                    username: "",
+                    password: ""
+                }
+            }
+        },
+        methods: {
+            login() {
+                axios.post("/login", this.user).then((response) => {
+                    if (response.data == 1) {
+                        location.href = "/admin.html";
+                    } else if (response.data == 2) {
+                        this.$message.error("用户名不存在!");
+                    } else {
+                        this.$message.error("密码错误!");
+                    }
+                }).catch((error) => {
+                    console.error("登录请求失败:", error);
+                    this.$message.error("登录请求失败，请稍后再试。");
+                });
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

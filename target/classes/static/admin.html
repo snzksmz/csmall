@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+<div id="app">
+    <el-container>
+        <el-header style="background-color: #0095d7">
+            <h1 style="color: white;font-size: 22px">CoolShark商城后台管理系统
+                <span style="float: right;font-size: 15px">欢迎{{user.nick}}回来!
+                    <a href="javascript:void(0)" @click="logout()">退出登录</a>
+                </span>
+            </h1>
+        </el-header>
+        <el-container>
+            <el-aside width="200px">
+                <!--侧边栏开始-->
+                <el-menu class="el-menu-vertical-demo"
+                         @select="handleSelect">
+                    <el-submenu index="1">
+                        <template slot="title">
+                            <i class="el-icon-s-flag">分类管理</i>
+                        </template>
+                        <el-menu-item index="1-1">分类列表</el-menu-item>
+                        <el-menu-item index="1-2">添加分类</el-menu-item>
+                    </el-submenu>
+                    <el-submenu index="2">
+                        <template slot="title">
+                            <i class="el-icon-picture">轮播图管理</i>
+                        </template>
+                        <el-menu-item index="2-1">轮播图列表</el-menu-item>
+                        <el-menu-item index="2-2">添加轮播图</el-menu-item>
+                    </el-submenu>
+                    <el-submenu index="3">
+                        <template slot="title">
+                            <i class="el-icon-shopping-cart-2">商品管理</i>
+                        </template>
+                        <el-menu-item index="3-1">商品列表</el-menu-item>
+                        <el-menu-item index="3-2">添加商品</el-menu-item>
+                    </el-submenu>
+                </el-menu>
+                <!--侧边栏结束-->
+            </el-aside>
+            <el-main>
+                <!--分类表格开始-->
+                <el-table v-if="selectedIndex=='1-1'" :data="categoryArr" style="width: 100%">
+                    <!--type="index" 设置当前列展示编号信息-->
+                    <el-table-column type="index" label="编号" width="180">
+                    </el-table-column>
+                    <el-table-column prop="name" label="分类名称" width="180">
+                    </el-table-column>
+                    <el-table-column label="操作">
+                        <!--scope代表的是当前行所包含的数据,里面有当前行对应的位置和对象-->
+                        <template slot-scope="scope">
+                            <el-popconfirm title="你确定删除吗？"
+                                           @confirm="categoryDelete(scope.$index, scope.row)">
+                                <el-button slot="reference" size="mini" type="danger">删除</el-button>
+                            </el-popconfirm>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <!--分类表格结束-->
+                <!--轮播图表格开始-->
+                <el-table v-if="selectedIndex=='2-1'" :data="bannerArr" style="width: 100%">
+                    <!--type="index" 设置当前列展示编号信息-->
+                    <el-table-column type="index" label="编号" width="180">
+                    </el-table-column>
+                    <el-table-column label="轮播图" width="180">
+                        <template slot-scope="scope">
+                            <img :src="scope.row.url" width="150" alt="">
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="操作">
+                        <!--scope代表的是当前行所包含的数据,里面有当前行对应的位置和对象(scope.row)-->
+                        <template slot-scope="scope">
+                            <el-popconfirm title="你确定删除吗？"
+                                           @confirm="bannerDelete(scope.$index, scope.row)">
+                                <el-button slot="reference" size="mini" type="danger">删除</el-button>
+                            </el-popconfirm>
+                        </template>
+                    </el-table-column>
+                </el-table>
+
+                <!--轮播图表格结束-->
+                <!--商品表格开始-->
+                <el-table v-if="selectedIndex=='3-1'" :data="productArr" style="width: 100%">
+                    <!--type="index" 设置当前列展示编号信息-->
+                    <el-table-column type="index" label="编号" width="180">
+                    </el-table-column>
+                    <el-table-column prop="title" label="商品标题" width="150"></el-table-column>
+                    <el-table-column prop="price" label="价格" width="100"></el-table-column>
+                    <el-table-column prop="saleCount" label="销量" width="100"></el-table-column>
+                    <el-table-column label="商品图片" width="180">
+                        <template slot-scope="scope">
+                            <img :src="scope.row.url" width="150" alt="">
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="操作">
+                        <!--scope代表的是当前行所包含的数据,里面有当前行对应的位置和对象(scope.row)-->
+                        <template slot-scope="scope">
+                            <el-popconfirm title="你确定删除吗？"
+                                           @confirm="productDelete(scope.$index, scope.row)">
+                                <el-button slot="reference" size="mini" type="danger">删除</el-button>
+                            </el-popconfirm>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <!--商品表格结束-->
+
+            </el-main>
+        </el-container>
+    </el-container>
+</div>
+</body>
+<!-- import Vue before Element -->
+<!--引入Vue框架-->
+<script src="js/vue.min.js"></script>
+<!-- import JavaScript -->
+<script src="js/index.js"></script>
+<script src="js/axios.js"></script>
+
+<script>
+    let v = new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                selectedIndex: "1-1",
+                categoryArr: [],
+                bannerArr: [],
+                productArr: [],
+                user: {}
+            }
+        },
+        methods: {
+            logout() {
+                axios.get("/logout").then(function () {
+                    location.href = "/";
+                })
+            },
+            handleSelect(index) {
+                console.log(index);
+                if (index == "1-2") {
+                    console.log("添加分类");
+                    v.$prompt('请输入分类名称', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                    }).then(({value}) => {
+                        console.log("分类名:" + value)
+                        let name = value;
+                        if (name == null) {
+                            v.$message.error("分类名称不能为空!");
+                            return;
+                        }
+                        //发请求添加分类
+                        axios.get("/category/insert?name=" + name).then(function () {
+                            location.reload();//刷新页面
+                        })
+                    }).catch(() => {
+
+                    });
+
+                } else if (index == "2-2") {
+                    console.log("添加轮播图");
+                    location.href = "/insertBanner.html"
+
+                } else if (index == "3-2") {
+                    console.log("添加商品");
+                    location.href = "/insertProduct.html";
+                } else {
+                    v.selectedIndex = index;
+                }
+            },
+            categoryDelete(index, category) {
+                //发出删除分类的请求
+                axios.get("/category/delete?id=" + category.id).then(function () {
+                    //删除成功后 删除数据里面的对象 从而让页面跟着改变
+                    //splice(a,b)数组的删除元素方法, a代表下标 b代表数量
+                    v.categoryArr.splice(index, 1);
+                })
+            },
+            productDelete(index, product) {
+                //发出删除作品的请求
+                axios.get("/product/delete?id=" + product.id).then(function () {
+                    //删除成功后 删除数组中的内容让页面跟着改变
+                    v.productArr.splice(index, 1);
+                })
+            },
+            bannerDelete(index, banner) {
+                //发出删除轮播图的请求
+                axios.get("/banner/delete?id=" + banner.id).then(function () {
+                    //删除成功后 删除数组中的内容让页面跟着改变
+                    v.bannerArr.splice(index, 1);
+                })
+            }
+        },
+        created: function () {
+            //发请求获取当前登录的用户信息
+            axios.get("/currentUser").then(function (response) {
+                v.user = response.data;
+                if (response.data == "") {
+                    //如果没有登录则显示登录页面
+                    location.href = "/login.html";
+                }
+            })
+
+            //发请求获取分类数据
+            axios.get("/category/select").then(function (response) {
+                v.categoryArr = response.data;
+            })
+            //发请求获取轮播图数据
+            axios.get("/banner/select").then(function (response) {
+                v.bannerArr = response.data;
+            })
+            //发请求获取商品数据
+            axios.get("/product/select").then(function (response) {
+                v.productArr = response.data;
+            })
+        }
+    })
+</script>
+</html>

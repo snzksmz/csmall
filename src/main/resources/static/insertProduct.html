@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="css/index.css">
+    <style>
+    </style>
+</head>
+<body>
+<div id="app">
+    <!--页头组件-->
+    <el-page-header style="background-color: #0095d7;color: white;line-height: 60px" @back="goBack" content="添加商品">
+    </el-page-header>
+    <el-divider></el-divider>
+    <el-card>
+        <el-form style="width: 400px;margin: 30px auto" label-width="80px">
+            <el-form-item label="商品标题">
+                <el-input type="text" v-model="p.title" placeholder="请输入商品标题"></el-input>
+            </el-form-item>
+            <el-form-item label="价格">
+                <el-input type="text" v-model="p.price" placeholder="请输入商品价格"></el-input>
+            </el-form-item>
+            <el-form-item label="原价">
+                <el-input type="text" v-model="p.oldPrice" placeholder="请输入商品原价"></el-input>
+            </el-form-item>
+            <el-form-item label="库存">
+                <el-input type="text" v-model="p.num" placeholder="请输入商品库存"></el-input>
+            </el-form-item>
+            <el-form-item label="销量">
+                <el-input type="text" v-model="p.saleCount" placeholder="请输入商品销量"></el-input>
+            </el-form-item>
+            <el-form-item label="商品分类">
+                <el-select placeholder="请选择" v-model="p.categoryId">
+                    <el-option v-for="c in categoryArr"
+                               :label="c.name" :value="c.id"></el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item label="商品图片">
+                <!--添加上传文件的组件-->
+                <!--***************************************-->
+                <!--action代表提交地址  name代表文件上传时的参数名称
+                limit用来限制图片数量-->
+                <el-upload
+                        action="/upload"
+                        :limit="1"
+                        name="picFile"
+                        list-type="picture-card"
+                        :on-preview="handlePictureCardPreview"
+                        :on-remove="handleRemove"
+                        :on-success="handleSuccess"
+                >
+                    <i class="el-icon-plus"></i>
+                </el-upload>
+                <el-dialog :visible.sync="dialogVisible">
+                    <img width="100%" :src="dialogImageUrl" alt="">
+                </el-dialog>
+                <!--***************************************-->
+            </el-form-item>
+            <el-form-item>
+                <el-button @click="insert()">发布商品</el-button>
+            </el-form-item>
+        </el-form>
+
+
+
+    </el-card>
+
+</div>
+</body>
+<!-- import Vue before Element -->
+<!--引入Vue框架-->
+<script src="js/vue.min.js"></script>
+<!-- import JavaScript -->
+<script src="js/index.js"></script>
+<script src="js/axios.js"></script>
+
+<script>
+    let v = new Vue({
+        el: '#app',
+        data: function() {
+            return {
+                dialogImageUrl: '',
+                dialogVisible: false,
+                categoryArr:[],
+                p:{title:"",price:"",oldPrice:"",num:"",saleCount:"",url:"",categoryId:""}
+            }
+        },
+        created:function () {
+            //请求所有分类数据
+            axios.get("/category/select").then(function (response) {
+                v.categoryArr = response.data;
+            })
+        },
+        methods:{
+            goBack(){
+                //返回上一页面
+                history.back();
+            },
+            handleRemove(file, fileList) {
+                console.log(file, fileList);
+                //发请求告诉服务器删除文件夹里面的文件
+                //得到要删除的文件名
+                let fileName= file.response;
+                console.log("文件名:"+fileName);
+                axios.get("/remove?fileName="+fileName).then(function (response) {
+                    console.log("服务器文件删除完成!");
+                })
+                v.url="";
+            },
+            handlePictureCardPreview(file) {
+                this.dialogImageUrl = file.url;
+                this.dialogVisible = true;
+            },
+            insert(){
+                if (v.p.url==""){
+                    v.$message.error("请选择上传的图片!");
+                    return;
+                }
+                //发出异步请求
+                axios.post("/product/insert",v.p).then(function () {
+                    location.href="/admin.html";
+                })
+            },
+            handleSuccess(response, file, fileList){
+                console.log("上传文件成功!")
+                console.log("response="+response)
+                console.log("file="+file);
+                v.p.url = response;
+            }
+        }
+    })
+</script>
+</html>
+
+<!--
+
+create table product(id int primary key auto_increment,title varchar(100),url varchar(200),price double(10,2),old_price double(10,2),sale_count int,num int,view_count int,created timestamp,category_id int)charset=utf8;
+
+-->

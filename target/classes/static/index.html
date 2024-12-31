@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="css/index.css">
+    <style>
+        header a {
+            text-decoration: none;
+            color: #6c6c6c;
+        }
+
+        .el-menu {
+            /*去掉自带的下边框*/
+            border-bottom: 0 !important;
+        }
+
+        /*去掉内边距*/
+        .el-table .el-table__cell {
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <el-container>
+        <el-header height="150">
+            <div style="width: 1200px;margin: 0 auto">
+                <img src="imgs/logo.png" style="width: 300px;vertical-align: middle" alt="">
+                <span>
+                    <a href="">首页</a><el-divider direction="vertical"></el-divider>
+                    <a href="">热点咨询</a><el-divider direction="vertical"></el-divider>
+                    <a href="">商家入驻</a><el-divider direction="vertical"></el-divider>
+                    <a href="">社会招聘</a><el-divider direction="vertical"></el-divider>
+                    <a href="">校园招聘</a><el-divider direction="vertical"></el-divider>
+                    <a href="">帮助</a>
+                </span>
+            </div>
+            <!--*********蓝色导航条开始**********-->
+            <div style="width: 100%;height: 60px;background-color: #82c8ec">
+                <el-menu style="width: 1200px;margin: 0 auto" mode="horizontal"
+                         :default-active="1" class="el-menu-demo"
+                         background-color="#82c8ec"
+                         text-color="#fff"
+                         active-text-color="#fff"
+                         @select="handleSelect">
+                    <el-menu-item v-for="c in categoryArr" :index="c.id">{{c.name}}</el-menu-item>
+                    <!--搜索框开始-->
+                    <div style="float: right;margin-top: 11px">
+                        <el-input placeholder="请输入内容" @keydown.native.enter="search()" v-model="wd" class="input-with-select">
+                            <el-button slot="append" icon="el-icon-search" @click="search"></el-button>
+                        </el-input>
+                    </div>
+                    <!--搜索框结束-->
+                </el-menu>
+            </div>
+            <!--*********蓝色导航条结束**********-->
+        </el-header>
+        <el-main style="width: 1200px;margin: 0 auto">
+            <!--********轮播图和排行榜开始*********-->
+            <el-row :gutter="20">
+                <el-col :span="18">
+                    <el-carousel trigger="click" height="300px">
+                        <el-carousel-item v-for="b in bannerArr">
+                            <img :src="b.url" alt="" style="width: 100%">
+                        </el-carousel-item>
+                    </el-carousel>
+                </el-col>
+                <el-col :span="6">
+                    <el-card style="height: 300px">
+                        <h3><i style="font-weight: bold"
+                               class="el-icon-trophy"></i>销量最高</h3>
+                        <el-divider></el-divider>
+
+                        <el-table :data="topArr" style="width: 500px">
+                            <el-table-column type="index" label="排名" width="50">
+                            </el-table-column>
+                            <el-table-column prop="title" label="商品名" width="80">
+                            </el-table-column>
+                            <el-table-column prop="saleCount" label="销量" width="80">
+                            </el-table-column>
+                        </el-table>
+                    </el-card>
+                </el-col>
+            </el-row>
+            <!--********轮播图和排行榜结束*********-->
+            <!--**********商品列表开始*********-->
+            <el-row :gutter="20">
+                <el-col :span="6" v-for="p in productArr">
+                    <el-card>
+                        <div>
+                            <a :href="'/detail.html?id='+p.id">
+                                <img :src="p.url" width="233" height="233" alt="">
+                            </a>
+                        </div>
+                        <div>
+                            <a :href="'/detail.html?id='+p.id">
+                                <p style="font-size: 15px;margin-top: 0;height: 40px">{{p.title}}</p>
+                            </a>
+                            <div style="color: #666">
+                                <span>￥{{p.price}}</span>
+                                <s style="font-size: 12px">{{p.oldPrice}}</s>
+                                <span style="float: right">销量:{{p.saleCount}}件</span>
+                            </div>
+                        </div>
+                    </el-card>
+                </el-col>
+            </el-row>
+            <!--**********商品列表结束*********-->
+        </el-main>
+        <el-footer>
+            <!--margin-bottom: -30px让下面的元素盖住本元素-->
+
+        </el-footer>
+    </el-container>
+</div>
+</body>
+<!-- import Vue before Element -->
+<!--引入Vue框架-->
+<script src="js/vue.min.js"></script>
+<!-- import JavaScript -->
+<script src="js/index.js"></script>
+<script src="js/axios.js"></script>
+
+<script>
+    let v = new Vue({
+        el: '#app',
+        data: function () {
+            return {
+                categoryArr: [],
+                topArr: [{title: "小米手机", saleCount: 562}, {title: "李宁球鞋", saleCount: 542},
+                    {title: "毛巾", saleCount: 362}, {title: "安踏拖鞋", saleCount: 232},
+                    {title: "阿迪袜子", saleCount: 162}, {title: "耐克上衣", saleCount: 12}],
+                productArr: [],
+                bannerArr: [],
+                wd:""
+            }
+        },
+        methods: {
+            handleSelect(index, indexPath) {
+                console.log(index);
+                location.href = "/result.html?cid=" + index;
+            },
+            search(){
+                location.href="/result.html?wd="+v.wd;
+            }
+        },
+        created: function () {
+            //发请求获取分类信息
+            axios.get("/category/select").then(function (response) {
+                v.categoryArr = response.data;
+            })
+            //发请求获取轮播图信息
+            axios.get("/banner/select").then(function (response) {
+                v.bannerArr = response.data;
+            })
+            //发请求获取商品信息
+            axios.get("/product/select/index").then(function (response) {
+                v.productArr = response.data;
+            })
+            axios.get("/product/select/top").then(function (response) {
+                v.topArr = response.data();
+            })
+
+        }
+    })
+</script>
+</html>
